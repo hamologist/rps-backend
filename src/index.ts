@@ -30,7 +30,7 @@ const server = Bun.serve<WebSocketData>({
       } catch (error) {
         ws.send(JSON.stringify({
           success: false,
-          code: 'message-parse-error',
+          code: 'messageParseError',
           error: error instanceof Error ? error.message : error,
         }));
         return;
@@ -41,7 +41,7 @@ const server = Bun.serve<WebSocketData>({
       } catch (error) {
         ws.send(JSON.stringify({
           success: false,
-          code: 'unhandeled-server-error',
+          code: 'unhandeledServerError',
           action: routableMessage.action,
           error,
         }));

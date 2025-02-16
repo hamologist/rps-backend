@@ -7,3 +7,10 @@ export const users = sqliteTable("users", {
   secret: text("secret").notNull(),
 });
 export type Users = InferSelectModel<typeof users>;
+
+export const sessions = sqliteTable("sessions", {
+  id: text("id").primaryKey(),
+  playerOne: text("player_one").references(() => users.id),
+  playerTwo: text("player_two").references(() => users.id),
+});
+export type Sessions = InferSelectModel<typeof sessions>;

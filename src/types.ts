@@ -6,3 +6,7 @@ export type WebSocketData = {
 
 export type ServerWebSocket = BaseServerWebSocket<WebSocketData>;
 
+export type UserPayload = {
+  id: string;
+  secret: string;
+};

@@ -24,7 +24,7 @@ export async function createUserAction(ws: ServerWebSocket, payload: CreateUserP
 
   ws.send(JSON.stringify({
     success: true,
-    code: 'create-user-response',
+    code: 'createUserResponse',
     user: {
       id,
       secret,
