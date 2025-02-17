@@ -159,6 +159,8 @@ dist
 # Sqlite
 
 *.sqlite
+*.sqlite-shm
+*.sqlite-wal
 
 # Stores VSCode versions used for testing VSCode extensions
 

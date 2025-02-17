@@ -5,8 +5,10 @@ import type { ServerWebSocket, UserPayload } from '@/types';
 
 class InvalidUserSecretError extends Error {}
 
+export type FullUser = Awaited<ReturnType<typeof authenticateUser>>
+
 export async function authenticateRequest(ws: ServerWebSocket, userPayload: UserPayload) {
-  let user: Schemas.Users | undefined;
+  let user: FullUser | undefined;
   try {
     user = await authenticateUser(userPayload);
   } catch (error) {
@@ -35,7 +37,11 @@ export async function authenticateRequest(ws: ServerWebSocket, userPayload: User
 
 export async function authenticateUser(userPayload: UserPayload) {
   const user = await db.query.users.findFirst({
-    where: eq(Schemas.users.id, userPayload.id)
+    with: {
+      session: true,
+      connection: true,
+    },
+    where: eq(Schemas.users.id, userPayload.id),
   }).then(throwOnMissing)
 
   if(userPayload.secret !== user.secret) {
@@ -43,19 +49,4 @@ export async function authenticateUser(userPayload: UserPayload) {
   }
 
   return user;
-}
-
-export async function retrieveUserSessions(userId: string) {
-  const user = await db.query.users.findFirst({
-    with: {
-      usersToSessions: {
-        with: {
-          session: true
-        },
-      },
-    },
-    where: eq(Schemas.users.id, userId)
-  }).then(throwOnMissing);
-
-  return user.usersToSessions.map(userSession => userSession.session);
 }

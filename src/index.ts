@@ -1,24 +1,32 @@
 import type { WebSocketData } from '@/types';
 import { z } from 'zod';
 import { type RoutableMessage, routableMessageSchema, routeAction } from '@/router';
+import { db } from '@/db';
+import * as Schemas from '@/db/schemas'
+import { eq } from 'drizzle-orm';
 
 const env = z.object({
   HOST: z.string(),
   PORT: z.coerce.number(),
 }).parse(process.env);
 
+await db.delete(Schemas.connections);
+
 const server = Bun.serve<WebSocketData>({
-  fetch(req, server) {
+  async fetch(req, server) {
     const url = new URL(req.url);
     if (url.pathname === "/websocket") {
+      const connectionId = Bun.randomUUIDv7();
       const upgraded = server.upgrade(req, {
         data: {
-          connectionId: Bun.randomUUIDv7(),
+          connectionId,
         },
       });
       if (!upgraded) {
         return new Response("Upgrade failed", { status: 400 });
       }
+
+      await db.insert(Schemas.connections).values({ id: connectionId });
     }
     return new Response("Hello World");
   },
@@ -49,6 +57,9 @@ const server = Bun.serve<WebSocketData>({
         return
       }
     },
+    async close(ws) {
+      await db.delete(Schemas.connections).where(eq(Schemas.connections.id, ws.data.connectionId));
+    }
   },
   port: env.PORT,
   hostname: env.HOST,

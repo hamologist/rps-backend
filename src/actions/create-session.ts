@@ -3,6 +3,7 @@ import * as Schemas from '@/db/schemas';
 import { db } from '@/db';
 import type { ServerWebSocket } from '@/types';
 import { authenticateRequest } from '@/services';
+import { eq } from 'drizzle-orm';
 
 const KEY = 'createSession';
 
@@ -26,16 +27,15 @@ export async function createSessionAction(ws: ServerWebSocket, payload: CreateSe
       id: sessionId,
       playerOneId: user.id,
     });
-    await tx.insert(Schemas.usersToSessions).values({
-      userId: user.id,
-      sessionId,
-    });
+    await tx.update(Schemas.users)
+      .set({ sessionId })
+      .where(eq(Schemas.users.id, user.id));
   });
   ws.subscribe(`session:${sessionId}`);
   ws.send(JSON.stringify({
     success: true,
     code: 'createSessionResponse',
-    session: { sessionId },
+    session: { id: sessionId },
   }));
 }
 

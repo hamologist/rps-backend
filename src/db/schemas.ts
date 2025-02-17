@@ -1,31 +1,47 @@
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, type AnySQLiteColumn } from "drizzle-orm/sqlite-core";
 import { type InferSelectModel, relations } from "drizzle-orm";
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
   displayName: text("display_name").notNull(),
   secret: text("secret").notNull(),
+  sessionId: text("session_id").references((): AnySQLiteColumn => sessions.id, {
+    onUpdate: 'cascade',
+    onDelete: 'set null',
+  }),
+  connectionId: text("connection_id").references((): AnySQLiteColumn => connections.id, {
+    onUpdate: 'cascade',
+    onDelete: 'set null',
+  }),
 });
 export type Users = InferSelectModel<typeof users>;
-export const usersRelations = relations(users, ({ many }) => {
-  return { usersToSessions: many(usersToSessions) };
+export const usersRelations = relations(users, ({ one }) => {
+  return {
+    session: one(sessions, {
+      fields: [users.sessionId],
+      references: [sessions.id],
+    }),
+    connection: one(connections, {
+      fields: [users.connectionId],
+      references: [connections.id],
+    }),
+  };
 })
 
 export const sessions = sqliteTable("sessions", {
   id: text("id").primaryKey(),
-  playerOneId: text("player_one").references(() => users.id, {
+  playerOneId: text("player_one").references((): AnySQLiteColumn => users.id, {
     onUpdate: 'cascade',
     onDelete: 'cascade',
   }),
-  playerTwoId: text("player_two").references(() => users.id, {
+  playerTwoId: text("player_two").references((): AnySQLiteColumn => users.id, {
     onUpdate: 'cascade',
     onDelete: 'cascade',
   }),
 });
 export type Sessions = InferSelectModel<typeof sessions>;
-export const sessionsRelations = relations(sessions, ({ one, many }) => {
+export const sessionsRelations = relations(sessions, ({ one }) => {
   return {
-    usersToSessions: many(usersToSessions),
     playerOne: one(users, {
       fields: [sessions.playerOneId],
       references: [users.id],
@@ -37,29 +53,18 @@ export const sessionsRelations = relations(sessions, ({ one, many }) => {
   };
 });
 
-export const usersToSessions = sqliteTable("users_to_sessions", {
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, {
-      onDelete: 'cascade',
-      onUpdate: 'cascade',
-    }),
-  sessionId: text("sessionId")
-    .notNull()
-    .references(() => sessions.id, {
-      onDelete: 'cascade',
-      onUpdate: 'cascade',
-    }),
+export const connections = sqliteTable("connections", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references((): AnySQLiteColumn => users.id, {
+    onUpdate: 'cascade',
+    onDelete: 'cascade',
+  }),
 });
-export const usersToSessionsRelations = relations(usersToSessions, ({ one }) => {
+export const connectionsRelations = relations(connections, ({ one }) => {
   return {
     user: one(users, {
-      fields: [usersToSessions.userId],
+      fields: [connections.userId],
       references: [users.id],
     }),
-    session: one(sessions, {
-      fields: [usersToSessions.sessionId],
-      references: [sessions.id],
-    }),
   };
-})
+});

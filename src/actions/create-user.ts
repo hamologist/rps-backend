@@ -12,21 +12,28 @@ export const createUserPayloadSchema = z.object({
 export type CreateUserPayload = z.infer<typeof createUserPayloadSchema>;
 
 export async function createUserAction(ws: ServerWebSocket, payload: CreateUserPayload) {
-  const id = Bun.randomUUIDv7();
+  const userId = Bun.randomUUIDv7();
   const secret = getRandomValues(new Uint8Array(10))
     .reduce((acc, value) => acc + ("0" + value.toString(16)).slice(-2), "");
 
-  await db.insert(Schemas.users).values({
-    id,
-    displayName: payload.displayName,
-    secret,
+  await db.transaction(async (tx) => {
+    await tx.insert(Schemas.users).values({
+      id: userId,
+      displayName: payload.displayName,
+      secret,
+      connectionId: ws.data.connectionId,
+    });
+    await tx.update(Schemas.connections).set({
+      id: ws.data.connectionId,
+      userId,
+    });
   });
 
   ws.send(JSON.stringify({
     success: true,
     code: 'createUserResponse',
     user: {
-      id,
+      id: userId,
       secret,
     }
   }));

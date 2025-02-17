@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1739745575933,
-      "tag": "0000_create_users_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1739748408415,
-      "tag": "0001_create_sessions_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1739763512374,
-      "tag": "0002_create_users_to_sessions_table",
+      "when": 1739770107438,
+      "tag": "0000_initialize_database",
       "breakpoints": true
     }
   ]
