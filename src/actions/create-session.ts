@@ -2,35 +2,36 @@ import { z } from 'zod';
 import * as Schemas from '@/db/schemas';
 import { db } from '@/db';
 import type { ServerWebSocket } from '@/types';
-import { authenticateRequest } from '@/services';
 import { eq } from 'drizzle-orm';
 
 const KEY = 'createSession';
 
-export const createSessionPayloadSchema = z.object({
-  user: z.object({
-    id: z.string(),
-    secret: z.string(),
-  }),
-});
+export const createSessionPayloadSchema = z.undefined();
 export type CreateSessionPayload = z.infer<typeof createSessionPayloadSchema>;
 
-export async function createSessionAction(ws: ServerWebSocket, payload: CreateSessionPayload) {
-  const user = await authenticateRequest(ws, payload.user);
+export async function createSessionAction(ws: ServerWebSocket, payload?: CreateSessionPayload) {
+  const user = ws.data.user;
   if (user === undefined) {
+    ws.send(JSON.stringify({
+      success: false,
+      code: 'connectionNotAssociatedToUser',
+    }));
     return;
   }
 
   const sessionId = Bun.randomUUIDv7();
-  await db.transaction(async (tx) => {
-    await tx.insert(Schemas.sessions).values({
+  const session = await db.transaction(async (tx) => {
+    const session = await tx.insert(Schemas.sessions).values({
       id: sessionId,
       playerOneId: user.id,
-    });
+    }).returning();
     await tx.update(Schemas.users)
       .set({ sessionId })
       .where(eq(Schemas.users.id, user.id));
+
+    return session[0];
   });
+  ws.data.session = session;
   ws.subscribe(`session:${sessionId}`);
   ws.send(JSON.stringify({
     success: true,

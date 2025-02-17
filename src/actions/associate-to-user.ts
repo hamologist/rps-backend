@@ -30,11 +30,13 @@ export async function associateToUserAction(ws: ServerWebSocket, payload: Associ
       .where(eq(Schemas.users.id, user.id));
   });
   if (user.session !== null) {
-    ws.subscribe(`session:${user.session.id}`)
+    ws.subscribe(`session:${user.session.id}`);
+    ws.data.session = user.session;
   }
   ws.send(JSON.stringify({
     success: true,
     code: 'associateToUserResponse',
+    activeSession: user.session,
   }));
 }
 

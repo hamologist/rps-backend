@@ -16,19 +16,22 @@ export async function createUserAction(ws: ServerWebSocket, payload: CreateUserP
   const secret = getRandomValues(new Uint8Array(10))
     .reduce((acc, value) => acc + ("0" + value.toString(16)).slice(-2), "");
 
-  await db.transaction(async (tx) => {
-    await tx.insert(Schemas.users).values({
+  const user = await db.transaction(async (tx) => {
+    const user = await tx.insert(Schemas.users).values({
       id: userId,
       displayName: payload.displayName,
       secret,
       connectionId: ws.data.connectionId,
-    });
+    }).returning();
     await tx.update(Schemas.connections).set({
       id: ws.data.connectionId,
       userId,
     });
+
+    return user[0];
   });
 
+  ws.data.user = user;
   ws.send(JSON.stringify({
     success: true,
     code: 'createUserResponse',

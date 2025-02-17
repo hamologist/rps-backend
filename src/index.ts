@@ -17,10 +17,8 @@ const server = Bun.serve<WebSocketData>({
     const url = new URL(req.url);
     if (url.pathname === "/websocket") {
       const connectionId = Bun.randomUUIDv7();
-      const upgraded = server.upgrade(req, {
-        data: {
-          connectionId,
-        },
+      const upgraded = server.upgrade<WebSocketData>(req, {
+        data: { connectionId },
       });
       if (!upgraded) {
         return new Response("Upgrade failed", { status: 400 });
@@ -58,7 +56,9 @@ const server = Bun.serve<WebSocketData>({
       }
     },
     async close(ws) {
-      await db.delete(Schemas.connections).where(eq(Schemas.connections.id, ws.data.connectionId));
+      await db
+        .delete(Schemas.connections)
+        .where(eq(Schemas.connections.id, ws.data.connectionId));
     }
   },
   port: env.PORT,
