@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { getRandomValues } from 'crypto';
-import * as Schemas from '@/db/schema';
+import * as Schemas from '@/db/schemas';
 import { db } from '@/db';
 import type { ServerWebSocket } from '@/types';
 

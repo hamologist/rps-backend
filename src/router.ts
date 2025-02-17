@@ -1,6 +1,6 @@
 import { z, ZodError } from 'zod';
 import CreateUserAction from '@/actions/create-user';
-import RetrieveUserAction from '@/actions/retrieve-user';
+import AssociateToUserAction from '@/actions/associate-to-user';
 import CreateSessionAction from '@/actions/create-session';
 import type { ServerWebSocket } from '@/types';
 
@@ -19,9 +19,9 @@ export async function routeAction(ws: ServerWebSocket, routableMessage: Routable
         routed = () => CreateUserAction.action(ws, payload);
         break;
       }
-      case RetrieveUserAction.key: {
-        const payload = RetrieveUserAction.schema.parse(routableMessage.payload);
-        routed = () => RetrieveUserAction.action(ws, payload);
+      case AssociateToUserAction.key: {
+        const payload = AssociateToUserAction.schema.parse(routableMessage.payload);
+        routed = () => AssociateToUserAction.action(ws, payload);
         break;
       }
       case CreateSessionAction.key: {

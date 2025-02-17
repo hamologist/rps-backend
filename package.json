@@ -6,7 +6,7 @@
     "dev": "bun --bun --watch run src/index.ts",
     "start": "bun --bun run src/index.ts",
     "migrate": "bun --bun run scripts/migrate.ts",
-    "generate-migration": "bunx drizzle-kit generate --dialect sqlite --schema ./src/db/schema.ts",
+    "generate-migration": "bunx drizzle-kit generate --dialect sqlite --schema ./src/db/schemas.ts",
   },
   "devDependencies": {
     "@types/bun": "latest",

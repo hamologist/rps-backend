@@ -1,14 +1,16 @@
 import { drizzle } from "drizzle-orm/bun-sqlite";
 import { Database } from "bun:sqlite";
+import * as Schemas from "@/db/schemas";
 
 const sqlite = new Database("db.sqlite");
-export const db = drizzle(sqlite);
+export const db = drizzle(sqlite, { schema: Schemas });
 
-export class SelectMissingResultError extends Error {}
+export class MissingResultError extends Error {}
 
-export function takeUniqueOrThrow<T extends any[]>(values: T): T[number] {
-  if (values.length === 0) {
-    throw new SelectMissingResultError();
+export function throwOnMissing<T>(value: T | undefined): T {
+  if (value === undefined) {
+    throw new MissingResultError();
   }
-  return values[0];
+
+  return value;
 }

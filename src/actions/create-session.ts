@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import * as Schemas from '@/db/schema';
+import * as Schemas from '@/db/schemas';
 import { db } from '@/db';
 import type { ServerWebSocket } from '@/types';
 import { authenticateRequest } from '@/services';
@@ -20,15 +20,22 @@ export async function createSessionAction(ws: ServerWebSocket, payload: CreateSe
     return;
   }
 
-  const id = Bun.randomUUIDv7();
-  await db.insert(Schemas.sessions).values({
-    id,
-    playerOne: user.id,
+  const sessionId = Bun.randomUUIDv7();
+  await db.transaction(async (tx) => {
+    await tx.insert(Schemas.sessions).values({
+      id: sessionId,
+      playerOneId: user.id,
+    });
+    await tx.insert(Schemas.usersToSessions).values({
+      userId: user.id,
+      sessionId,
+    });
   });
+  ws.subscribe(`session:${sessionId}`);
   ws.send(JSON.stringify({
     success: true,
     code: 'createSessionResponse',
-    session: { id },
+    session: { sessionId },
   }));
 }
 
