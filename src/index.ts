@@ -12,7 +12,7 @@ const env = z.object({
 
 await db.delete(Schemas.connections);
 
-const server = Bun.serve<WebSocketData>({
+export const server = Bun.serve<WebSocketData>({
   async fetch(req, server) {
     const url = new URL(req.url);
     if (url.pathname === "/websocket") {

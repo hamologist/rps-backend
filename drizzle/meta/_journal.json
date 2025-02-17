@@ -8,6 +8,13 @@
       "when": 1739770107438,
       "tag": "0000_initialize_database",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1739833769968,
+      "tag": "0001_add_timestamp_to_sessions",
+      "breakpoints": true
     }
   ]
 }

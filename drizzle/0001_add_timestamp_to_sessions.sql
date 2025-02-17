@@ -1,0 +1,1 @@
+ALTER TABLE `sessions` ADD `last_action_datetime` text NOT NULL;

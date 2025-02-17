@@ -2,6 +2,7 @@ import { z, ZodError } from 'zod';
 import CreateUserAction from '@/actions/create-user';
 import AssociateToUserAction from '@/actions/associate-to-user';
 import CreateSessionAction from '@/actions/create-session';
+import JoinSessionAction from '@/actions/join-session';
 import type { ServerWebSocket } from '@/types';
 
 export const routableMessageSchema = z.object({
@@ -25,8 +26,12 @@ export async function routeAction(ws: ServerWebSocket, routableMessage: Routable
         break;
       }
       case CreateSessionAction.key: {
-        const payload = CreateSessionAction.schema.parse(routableMessage.payload);
-        routed = () => CreateSessionAction.action(ws, payload);
+        routed = () => CreateSessionAction.action(ws);
+        break;
+      }
+      case JoinSessionAction.key: {
+        const payload = JoinSessionAction.schema.parse(routableMessage.payload);
+        routed = () => JoinSessionAction.action(ws, payload);
         break;
       }
       default: {

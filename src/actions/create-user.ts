@@ -3,6 +3,7 @@ import { getRandomValues } from 'crypto';
 import * as Schemas from '@/db/schemas';
 import { db } from '@/db';
 import type { ServerWebSocket } from '@/types';
+import { eq } from 'drizzle-orm';
 
 const KEY = 'createUser';
 
@@ -23,10 +24,9 @@ export async function createUserAction(ws: ServerWebSocket, payload: CreateUserP
       secret,
       connectionId: ws.data.connectionId,
     }).returning();
-    await tx.update(Schemas.connections).set({
-      id: ws.data.connectionId,
-      userId,
-    });
+    await tx.update(Schemas.connections)
+    .set({ userId })
+    .where(eq(Schemas.connections.id, ws.data.connectionId));
 
     return user[0];
   });

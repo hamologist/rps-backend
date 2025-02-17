@@ -38,6 +38,7 @@ export const sessions = sqliteTable("sessions", {
     onUpdate: 'cascade',
     onDelete: 'cascade',
   }),
+  lastActionTimestamp: text("last_action_datetime").notNull(),
 });
 export type Sessions = InferSelectModel<typeof sessions>;
 export const sessionsRelations = relations(sessions, ({ one }) => {
