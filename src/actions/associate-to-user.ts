@@ -16,6 +16,14 @@ export const associateToUserPayloadSchema = z.object({
 export type AssociateToUserPayload = z.infer<typeof associateToUserPayloadSchema>;
 
 export async function associateToUserAction(ws: ServerWebSocket, payload: AssociateToUserPayload) {
+  if (ws.data.userId !== undefined) {
+    ws.send(JSON.stringify({
+      success: false,
+      code: 'existingUserAssociation',
+    }));
+    return;
+  }
+
   const user = await authenticateRequest(ws, payload.user);
   if (user === undefined) {
     return;
@@ -28,30 +36,25 @@ export async function associateToUserAction(ws: ServerWebSocket, payload: Associ
     return;
   }
 
-  const userUpdate = await db.transaction(async (tx) => {
+  await db.transaction(async (tx) => {
     await tx.update(Schemas.connections)
       .set({ userId: user.id })
       .where(eq(Schemas.connections.id, ws.data.connectionId));
-    const userUpdate = await tx.update(Schemas.users)
+    await tx.update(Schemas.users)
       .set({ connectionId: ws.data.connectionId })
-      .where(eq(Schemas.users.id, user.id))
-      .returning();
-
-    if (ws.data.user !== undefined) {
-      await tx.update(Schemas.users)
-        .set({ connectionId: null })
-        .where(eq(Schemas.users.id, ws.data.user.id));
-    }
-
-    return userUpdate[0]
+      .where(eq(Schemas.users.id, user.id));
   });
 
   if (user.session !== null) {
+    console.debug("SUBSCRIBED", {
+      user: user.displayName,
+      topic: `session:${user.session.id}`,
+    });
     ws.subscribe(`session:${user.session.id}`);
-    ws.data.session = user.session;
+    ws.data.sessionId = user.session.id;
   }
 
-  ws.data.user = userUpdate;
+  ws.data.userId = user.id;
   ws.send(JSON.stringify({
     success: true,
     code: 'associateToUserResponse',

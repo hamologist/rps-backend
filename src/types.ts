@@ -4,8 +4,8 @@ import { type InferSelectModel } from "drizzle-orm"
 
 export type WebSocketData = {
   connectionId: string;
-  user?: InferSelectModel<typeof users>;
-  session?: InferSelectModel<typeof sessions>;
+  userId?: string;
+  sessionId?: string;
 };
 
 export type ServerWebSocket = BaseServerWebSocket<WebSocketData>;

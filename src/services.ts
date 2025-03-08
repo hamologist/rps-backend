@@ -50,3 +50,53 @@ export async function authenticateUser(userPayload: UserPayload) {
 
   return user;
 }
+
+export async function retrieveUser(ws: ServerWebSocket) {
+  if (ws.data.userId === undefined) {
+    ws.send(JSON.stringify({
+      success: false,
+      code: 'connectionNotAssociatedToUser',
+    }));
+    return;
+  }
+
+  const user = await db.query.users.findFirst({
+    where: eq(Schemas.users.id, ws.data.userId),
+  });
+  if (user === undefined) {
+    ws.data.userId = undefined;
+    ws.send(JSON.stringify({
+      success: false,
+      code: 'userNoLongerInDB',
+    }));
+    return;
+  }
+
+  return user;
+}
+
+export async function retrieveSession(
+  ws: ServerWebSocket,
+  ignoreMissing: boolean = false
+) {
+  if (ws.data.sessionId === undefined) {
+    ws.send(JSON.stringify({
+      success: false,
+      code: 'connectionNotAssociatedToSession',
+    }));
+    return;
+  }
+
+  const session = await db.query.sessions.findFirst({
+    where: eq(Schemas.sessions.id, ws.data.sessionId),
+  });
+  if (session === undefined && !ignoreMissing) {
+    ws.data.userId = undefined;
+    ws.send(JSON.stringify({
+      success: false,
+      code: 'sessionNoLongerInDB',
+    }));
+  }
+
+  return session;
+}

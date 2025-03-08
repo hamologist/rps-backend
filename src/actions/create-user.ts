@@ -31,7 +31,7 @@ export async function createUserAction(ws: ServerWebSocket, payload: CreateUserP
     return user[0];
   });
 
-  ws.data.user = user;
+  ws.data.userId = user.id;
   ws.send(JSON.stringify({
     success: true,
     code: 'createUserResponse',

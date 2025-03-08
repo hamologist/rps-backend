@@ -3,6 +3,7 @@ import CreateUserAction from '@/actions/create-user';
 import AssociateToUserAction from '@/actions/associate-to-user';
 import CreateSessionAction from '@/actions/create-session';
 import JoinSessionAction from '@/actions/join-session';
+import LeaveSessionAction from '@/actions/leave-session';
 import type { ServerWebSocket } from '@/types';
 
 export const routableMessageSchema = z.object({
@@ -32,6 +33,10 @@ export async function routeAction(ws: ServerWebSocket, routableMessage: Routable
       case JoinSessionAction.key: {
         const payload = JoinSessionAction.schema.parse(routableMessage.payload);
         routed = () => JoinSessionAction.action(ws, payload);
+        break;
+      }
+      case LeaveSessionAction.key: {
+        routed = () => LeaveSessionAction.action(ws);
         break;
       }
       default: {

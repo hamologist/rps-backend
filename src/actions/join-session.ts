@@ -1,9 +1,9 @@
-
 import { z } from 'zod';
 import * as Schemas from '@/db/schemas';
 import { db } from '@/db';
 import type { ServerWebSocket } from '@/types';
 import { eq } from 'drizzle-orm';
+import { retrieveUser } from '@/services';
 
 const KEY = 'joinSession';
 
@@ -13,12 +13,8 @@ export const joinSessionPayloadSchema = z.object({
 export type JoinSessionPayload = z.infer<typeof joinSessionPayloadSchema>;
 
 export async function joinSessionAction(ws: ServerWebSocket, payload: JoinSessionPayload) {
-  const user = ws.data.user;
-  if (user === undefined) {
-    ws.send(JSON.stringify({
-      success: false,
-      code: 'connectionNotAssociatedToUser',
-    }));
+  const user = await retrieveUser(ws);
+  if (!user) {
     return;
   }
 
@@ -48,7 +44,7 @@ export async function joinSessionAction(ws: ServerWebSocket, payload: JoinSessio
     return;
   }
 
-  const { sessionUpdate, userUpdate } = await db.transaction(async (tx) => {
+  const { sessionUpdate } = await db.transaction(async (tx) => {
     const sessionUpdate = await tx.update(Schemas.sessions)
       .set({
         playerTwoId: user.id,
@@ -56,7 +52,7 @@ export async function joinSessionAction(ws: ServerWebSocket, payload: JoinSessio
       })
       .where(eq(Schemas.sessions.id, session.id))
       .returning();
-    const userUpdate = await tx.update(Schemas.users)
+    await tx.update(Schemas.users)
       .set({ sessionId: session.id })
       .where(eq(Schemas.users.id, user.id))
       .returning();
@@ -68,17 +64,15 @@ export async function joinSessionAction(ws: ServerWebSocket, payload: JoinSessio
 
     return {
       sessionUpdate: sessionUpdate[0],
-      userUpdate: userUpdate[0],
     };
   });
 
-  ws.data.user = userUpdate;
-  ws.data.session = sessionUpdate;
+  ws.data.sessionId = sessionUpdate.id;
   ws.subscribe(`session:${sessionUpdate.id}`);
   ws.send(JSON.stringify({
     success: true,
-    code: 'createSessionResponse',
-    session: { id: sessionUpdate.id },
+    code: 'joinSessionResponse',
+    session: sessionUpdate,
   }));
   ws.publish(`session:${sessionUpdate.id}`, JSON.stringify({
     code: 'sessionUpdate',
