@@ -1,0 +1,46 @@
+# Binaries
+/rps-backend
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Test cache / coverage
+*.out
+coverage.html
+
+# Go workspace
+go.work
+go.work.sum
+
+# Vendor
+vendor/
+
+# Module download cache
+/root/.cache/
+
+# Environment
+.env
+
+# SQLite / database files
+*.db
+*.sqlite
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude Code
+.claude/settings.local.json
+.claude/.local
