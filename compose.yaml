@@ -1,0 +1,25 @@
+# Development: `docker compose up` runs the server with hot reload.
+services:
+  rps-backend:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - go-mod:/go/pkg/mod
+      - go-build:/root/.cache/go-build
+      - dev-data:/data
+    environment:
+      RPS_DB_PATH: /data/rps.db
+      RPS_ALLOWED_ORIGINS: ${RPS_ALLOWED_ORIGINS:-}
+      RPS_LOG_LEVEL: debug
+    env_file:
+      - path: .env
+        required: false
+
+volumes:
+  go-mod:
+  go-build:
+  dev-data:

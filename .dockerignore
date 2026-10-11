@@ -1,0 +1,10 @@
+.git
+.claude
+*.db
+*.db-*
+tmp/
+.env
+coverage.*
+*.test
+*.out
+/rps-backend
