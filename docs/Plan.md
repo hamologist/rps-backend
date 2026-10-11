@@ -1,8 +1,3 @@
----
-tags:
-  - planning/dated/2026
-  - planning/project/rps/backend
----
 The purpose of this project is to see to the creation of a webserver that processes and manages game state for rock paper scissors.
 # Technology
 - Programming language: Go
@@ -30,13 +25,13 @@ As a user, I need the ability to connect to the webserver using a websocket on `
 ```
 Where valid `payload` value is dependent on `action`.
 ## Tie Player to Websocket connection
-As a user, once a Websocket connection is established, I need the ability to verify that I am an active player that was created prior. I should not be able to perform other actions at this point other than the [[Plan#Player Authenticate]] action. A player should only ever be associated with one connection at a time. If a new connection attempts to associate to the player, the previous connection should be dropped.
+As a user, once a Websocket connection is established, I need the ability to verify that I am an active player that was created prior. I should not be able to perform other actions at this point other than the [Player Authenticate](#player-authenticate) action. A player should only ever be associated with one connection at a time. If a new connection attempts to associate to the player, the previous connection should be dropped.
 ## Connect to a Game
-As a user who has already opened a Websocket connection and has authenticated as an existing player, I need the ability to associate my connection to a game. I should only be able to have my connection associated to one game at a time. I will do so using the [[Plan#Connect to a Game]] action.
+As a user who has already opened a Websocket connection and has authenticated as an existing player, I need the ability to associate my connection to a game. I should only be able to have my connection associated to one game at a time. I will do so using the [Game Connect](#game-connect) action.
 ## Player Makes a Move
-As an authenticated player, I need the ability to send my desired move to a game I am associated with. Once my move has been sent, I will be locked in and wait for the other player to send their move. I will send my move using the [[Plan#Game Move]] action. Once both moves have been locked in the game's wins and draw counts should be updated accordingly. Likewise, the game state and status should be updated as well.
+As an authenticated player, I need the ability to send my desired move to a game I am associated with. Once my move has been sent, I will be locked in and wait for the other player to send their move. I will send my move using the [Game Move](#game-move) action. Once both moves have been locked in the game's wins and draw counts should be updated accordingly. Likewise, the game state and status should be updated as well.
 ## Player Rejoins the Game
-As an authenticated player, I need the ability to rejoin a game that I was still in the process of playing. I will rejoin the game using the [[Plan#Connect to a Game]] action.
+As an authenticated player, I need the ability to rejoin a game that I was still in the process of playing. I will rejoin the game using the [Game Connect](#game-connect) action.
 ## Player Issues a New Game After Current Game Has Ended
 As an authenticated player associated to a game that has completed, I need the ability to issue a rematch. The other player would have to accept the rematch, otherwise the game would go back to a completed state. If the other player did accept the game state would have to reset to the following:
 - `host_player_latest_move` -> `PENDING`
@@ -44,25 +39,25 @@ As an authenticated player associated to a game that has completed, I need the a
 - `status` -> `ACTIVE`
 - `game_state` -> `WAITING_FOR_MOVES`
 ## Player Leaves a Game
-As an authenticated player associated to a game, I need the ability to leave said game. I will leave the game using the [[Plan#Game Leave]] action.
+As an authenticated player associated to a game, I need the ability to leave said game. I will leave the game using the [Game Leave](#game-leave) action.
 ## Player Expires
 Players accounts are intended to be temporary. Players with `last_active_at` values that are over 24 hours should be scrubbed from the database. Players that are up for deletion should also have any active connections terminated. Games that they are associated to should have their `status` set to `CLOSED`.
 ## Game Expires
 Games are intended to be temporary. Games with `last_active_at` values that are over 24 hours should be scrubbed from the database. Players that are connected to games that are being scrubbed should have their connections terminated.
 ## Player Last Active At Updates
 As a player, I want my `last_active_at` to update whenever I perform actions like:
-- [[Plan#Games Create]]
-- [[Plan#Player Authenticate]]
-- [[Plan#Game Connect]]
-- [[Plan#Game Move]]
-- [[Plan#Game Rematch]]
-- [[Plan#Game Leave]]
+- [Games Create](#games-create)
+- [Player Authenticate](#player-authenticate)
+- [Game Connect](#game-connect)
+- [Game Move](#game-move)
+- [Game Rematch](#game-rematch)
+- [Game Leave](#game-leave)
 ## Game Last Active At Updates
 As a user, I want games `last_active_at` to update whenever actions are performed against the game like:
-- [[Plan#Game Connect]]
-- [[Plan#Game Move]]
-- [[Plan#Game Rematch]]
-- [[Plan#Game Leave]]
+- [Game Connect](#game-connect)
+- [Game Move](#game-move)
+- [Game Rematch](#game-rematch)
+- [Game Leave](#game-leave)
 # HTTP Endpoints
 ## Player Create
 - Route: `/players`
